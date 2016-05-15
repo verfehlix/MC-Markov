@@ -1,0 +1,13 @@
+{
+  "name": "MC-Markov",
+  "version": "0.0.1",
+  "dependencies": {
+    "cheerio": "^0.20.0",
+    "request": "^2.72.0"
+  },
+  "license": "GPL",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/verfehlix/MC-Markov.git"
+  },
+}
