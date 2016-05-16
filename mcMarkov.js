@@ -49,7 +49,9 @@ var stateA = new State("A", ["A", "B", "C"], [0.9, 0.05, 0.05]);
 var stateB = new State("B", ["A", "B", "C"], [0.05, 0.9, 0.05]);
 var stateC = new State("C", ["A", "B", "C"], [0.05, 0.05, 0.9]);
 
-var markovChain = new MarkovChain([stateA, stateB, stateC], "A");
+var stateArray = [stateA, stateB, stateC];
+
+var markovChain = new MarkovChain(stateArray, "A");
 
 var i = 0;
 setInterval(function() {
