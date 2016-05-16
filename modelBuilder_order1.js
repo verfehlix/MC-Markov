@@ -7,6 +7,9 @@ var fileName = "lyrics/Kollegah.txt";
 var text = fs.readFileSync(fileName, 'utf8').toString();
 // var text = "I am not a number! I am a free man!";
 
+var order = 2;
+var amountOfWords = 50;
+
 //split text into words
 var regex = /[ \n]/;
 var textArray = text.split(regex);
@@ -14,9 +17,16 @@ var wordCount = textArray.length - 1;
 
 var model = {};
 
-for (var i = 0; i < textArray.length - 1; i++) {
-	var word = textArray[i];
-	var nachfolger = textArray[i+1];
+for (var i = 0; i < textArray.length - order; i++) {
+	var word = "";
+	
+	for (var j = i; j < i + order ; j++) {
+		word += textArray[j] + " ";
+	}
+
+	word = word.trim();
+
+	var nachfolger = textArray[i+order];
 
 	if(!model[word]){ 
 		model[word] = {};
@@ -28,7 +38,6 @@ for (var i = 0; i < textArray.length - 1; i++) {
 		model[word][nachfolger] = 1;
 	}	
 };
-
 
 for (var wordKey in model) {
 	var word = model[wordKey];
@@ -57,33 +66,19 @@ for (var wordKey in model) {
 		nachfolgeStatePropabilites.push(word[nachfolgerKey]);
 	}
 
-	var state = new State(wordKey, nachfolgeStates, nachfolgeStatePropabilites);
+	var state = new State(wordKey, nachfolgeStates, nachfolgeStatePropabilites); 
 
 	states.push(state);
 };
 
+var randomModelWort = Object.keys(model)[Math.floor(Math.random() * Object.keys(model).length - 1)  ];
 
-var markovChain = new MarkovChain(states, "I");
+var markovChain = new MarkovChain(states, randomModelWort);
 
-var i = 0;
-setInterval(function() {
-    console.log(i + " " + markovChain.currentStateId);
-    markovChain.goToNextState();
-    i++;
-}, 250);
+var resultText = "";
+for (var i = 0; i < amountOfWords; i++) {
+	resultText += markovChain.printText + " ";
+	markovChain.goToNextState();
+};
 
-
-// var stateA = new State("A", ["A", "B", "C"], [0.9, 0.05, 0.05]);
-// var stateB = new State("B", ["A", "B", "C"], [0.05, 0.9, 0.05]);
-// var stateC = new State("C", ["A", "B", "C"], [0.05, 0.05, 0.9]);
-
-// var stateArray = [stateA, stateB, stateC];
-
-// var markovChain = new MarkovChain(stateArray, "A");
-
-// var i = 0;
-// setInterval(function() {
-//     console.log(i + " " + markovChain.currentStateId);
-//     markovChain.goToNextState();
-//     i++;
-// }, 250);
+console.log(resultText);

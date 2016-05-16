@@ -11,6 +11,8 @@ var MarkovChain = function(states, initialStateId) {
 
     this.currentStateId = initialStateId;
 
+    this.printText = initialStateId;
+
     this.getCurrentStateById =  function(id) {
         for (var i = 0; i < this.states.length; i++) {
             if(this.states[i].id === this.currentStateId){
@@ -28,7 +30,11 @@ var MarkovChain = function(states, initialStateId) {
 
         var nextStateId = this.transition(currentState.transitionStates, currentState.transitionPropabilites);
 
-        this.currentStateId = nextStateId;
+        this.printText = nextStateId;
+
+        var newPrefix = (this.currentStateId + " " + nextStateId).split(" ").slice(1).join(" ");
+
+        this.currentStateId = newPrefix;
     };
 
     this.transition = function(states, propabilites) {
