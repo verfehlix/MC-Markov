@@ -1,19 +1,15 @@
 var fs = require('fs');
 
+//read in text file
 var fileName = "lyrics/Kollegah.txt";
-
 var text = fs.readFileSync(fileName, 'utf8').toString();
 
-var order = 0;
-
+//split text into words
 var regex = /[ \n]/;
 var textArray = text.split(regex);
 var wordCount = textArray.length - 1;
 
-// for (var i = 1; i <= wordCount; i++) {
-// 	console.log("Word " + i + " / " + wordCount + " : " + textArray[i]);
-// };
-
+//create word count object
 var wordOccurences = textArray.reduce(function(fruitsCount, currentFruit){
     if(typeof fruitsCount[currentFruit] !== "undefined"){
       fruitsCount[currentFruit]++; 
@@ -24,17 +20,16 @@ var wordOccurences = textArray.reduce(function(fruitsCount, currentFruit){
     }
 }, {});
 
-//console.log(JSON.stringify(wordOccurences));
+//create single arrays with reduced words and their counts
 var wordArray = [];
 var wordPropabilityArray = [];
 
-
 for (var word in wordOccurences) {
-    // console.log("WORD: " + word + " COUNT " + wordOccurences[word] + " PERCENTAGE " + wordOccurences[word] / wordCount);    		
     wordArray.push(word);
     wordPropabilityArray.push(wordOccurences[word] / wordCount);
 }
 
+//function to select a random word depending on its "propability"
 var getNextWord = function(words, propabilites){
 	var sumArray = [];
 	var sum = 0;
@@ -46,11 +41,13 @@ var getNextWord = function(words, propabilites){
 
 	var r = Math.random();
 
-	for (var i = 0; i < sumArray.length && r >= sumArray[i]; i++);
+	var i = 0;
+	for (i = 0; i < sumArray.length && r >= sumArray[i]; i++);
 
 	return words[i];
 };
 
+//create resulting text
 var resultingText = "";
 
 for (var i = 0; i < 75; i++) {

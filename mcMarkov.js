@@ -1,3 +1,5 @@
+var service = {};
+
 var State = function(id, transitionStates, transitionPropabilites) {
     this.id = id;
     this.transitionStates = transitionStates;
@@ -19,7 +21,11 @@ var MarkovChain = function(states, initialStateId) {
 
     this.goToNextState =  function() {
         var currentState = this.getCurrentStateById(this.currentStateId);
-    
+        
+        if(!currentState){
+            return;
+        }
+
         var nextStateId = this.transition(currentState.transitionStates, currentState.transitionPropabilites);
 
         this.currentStateId = nextStateId;
@@ -42,20 +48,7 @@ var MarkovChain = function(states, initialStateId) {
     };
 };
 
+service.State = State;
+service.MarkovChain = MarkovChain;
 
-
-
-var stateA = new State("A", ["A", "B", "C"], [0.9, 0.05, 0.05]);
-var stateB = new State("B", ["A", "B", "C"], [0.05, 0.9, 0.05]);
-var stateC = new State("C", ["A", "B", "C"], [0.05, 0.05, 0.9]);
-
-var stateArray = [stateA, stateB, stateC];
-
-var markovChain = new MarkovChain(stateArray, "A");
-
-var i = 0;
-setInterval(function() {
-    console.log(i + " " + markovChain.currentStateId);
-    markovChain.goToNextState();
-    i++;
-}, 250);
+module.exports = service;
