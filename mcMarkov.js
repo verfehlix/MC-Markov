@@ -25,6 +25,7 @@ var MarkovChain = function(states, initialStateId) {
         var currentState = this.getCurrentStateById(this.currentStateId);
         
         if(!currentState){
+            console.log("ERROR - current '" + this.currentStateId + "'");
             return;
         }
 
