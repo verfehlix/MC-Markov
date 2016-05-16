@@ -3,7 +3,7 @@ var MarkovChain = require('./mcMarkov').MarkovChain;
 
 var fs = require('fs');
 
-var fileName = "lyrics/Kollegah.txt";
+var fileName = "lyrics/trump.txt";
 var text = fs.readFileSync(fileName, 'utf8').toString();
 // var text = "I am not a number! I am a free man!";
 

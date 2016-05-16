@@ -5,8 +5,8 @@ var cheerio = require('cheerio');
 
 //settings
 var baseUrl = "http://www.magistrix.de"
-var artistOverviewPath = "/lyrics/Kollegah/?order=name";
-var fileName = "Kollegah";
+var artistOverviewPath = "/lyrics/Samy Deluxe/?order=name";
+var fileName = "SamyDeluxe.txt";
 
 //variables
 var songUrls = [];
@@ -75,7 +75,7 @@ function parseSongPage(body) {
 
 //write text to file
 function appendToFile(text){
-    fs.appendFile("texts/" + fileName + ".txt", text + "\n", function(err) {
+    fs.appendFile("lyrics/" + fileName + ".txt", text + "\n", function(err) {
         if (err) {
             console.log("ERROR DURING FILE WRITE");
             console.log(err);
