@@ -3,6 +3,8 @@ var MarkovChain = require('./mcMarkov').MarkovChain;
 
 var service = {};
 
+
+var allWords = {};
 var model = {};
 
 
@@ -17,6 +19,9 @@ function addToModel(text, order){
 	console.log("Adding " + wordCount + " words");
 
 	for (var i = 0; i < textArray.length - order; i++) {
+		if (isNaN(textArray[i])) // no numbers
+			allWords[textArray[i]] = "ha";
+
 		var word = "";
 		
 		for (var j = i; j < i + order ; j++) {
@@ -37,6 +42,7 @@ function addToModel(text, order){
 		}	
 	};
 	// console.log(JSON.stringify(model));
+	
 }
 
 var alreadyCalculatedProbabilities = false;
@@ -82,25 +88,79 @@ function createStates(){
 
 }
 
+String.prototype.endsWith = function(suffix) {
+    return this.indexOf(suffix, this.length - suffix.length) !== -1;
+};
 
-function getMarkovText(amountOfWords, startWord){
-	if(!startWord) startWord = Object.keys(model)[Math.floor(Math.random() * Object.keys(model).length - 1)  ];
+function findSimilarEnding(word){
+	var rappable = require('rappable');
+
+	word = word.replace(/['"“”\[\]\)\(]+/g, '')
+
+	for (var wordKey in allWords) {
+		wordKey = wordKey.replace(/['"“”\[\]\)\(]+/g, '')
+		if (wordKey.toLowerCase() == word.toLowerCase()) continue;
+
+		if(rappable.isRappable(word, wordKey)){
+			console.log( "Found word " +wordKey+ " for  " + word);
+			return wordKey;
+		}
+	}
+	return "";
+
+}
+
+
+function getMarkovText(amountOfWords, options){
+	if(!options) options = {};
+	if(!options.startWord) options.startWord = Object.keys(model)[Math.floor(Math.random() * Object.keys(model).length - 1)  ];
 
 	calcProbabilities();
 	var states = createStates();
-	var markovChain = new MarkovChain(states, startWord);
+	var markovChain = new MarkovChain(states, options.startWord);
+
+	var lastToRhyme;
+	var charsSinceLastRhyme = 0;
+	var setit = true;
 
 	var resultText = "";
 	for (var i = 0; i < amountOfWords; i++) {
-		resultText += markovChain.printText + " ";
+		resultText += markovChain.currentText + " ";
+
+		if (options.rhymeEveryXCharacters) {
+			if (charsSinceLastRhyme > options.rhymeEveryXCharacters && setit) {
+				lastToRhyme = markovChain.currentText;
+				resultText += " \n";
+				setit = false;
+			}
+
+			if (charsSinceLastRhyme>options.rhymeEveryXCharacters*2 ) {
+				var rhyme = findSimilarEnding(lastToRhyme);
+				resultText += rhyme + " \n";
+				charsSinceLastRhyme = 0;
+				setit = true;
+			}
+		}
+
+		if (options.rhymeEveryXWord) {
+			if (i % (options.rhymeEveryXWord*2) == 0 && i != 0) {
+				var rhyme = findSimilarEnding(lastToRhyme);
+				resultText += rhyme;
+			}
+
+			if (i == 0 || i % options.rhymeEveryXWord == 0) {
+				lastToRhyme = markovChain.currentText;
+				resultText += " \n";			
+			}
+		}
+		
 		markovChain.goToNextState();
+		charsSinceLastRhyme += markovChain.currentText.length;
 	};
 
 	return resultText;
 
 }
-
-
 
 
 service.addToModel = addToModel;

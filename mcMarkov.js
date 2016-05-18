@@ -11,7 +11,7 @@ var MarkovChain = function(states, initialStateId) {
 
     this.currentStateId = initialStateId;
 
-    this.printText = initialStateId;
+    this.currentText = initialStateId;
 
     this.getCurrentStateById =  function(id) {
         for (var i = 0; i < this.states.length; i++) {
@@ -25,20 +25,27 @@ var MarkovChain = function(states, initialStateId) {
         var currentState = this.getCurrentStateById(this.currentStateId);
         
         if(!currentState){
-            console.log("ERROR - current '" + this.currentStateId + "'");
+            var nextStateId = this.states[Math.floor(Math.random() * Object.keys(this.states).length - 1) ].id.split(" ")[0];
+
+            // console.log("Nothing found for '" + this.currentStateId + "' - Taking Random:" + nextStateId);
+            this.moveToNextId(nextStateId);
             return;
         }
 
-        var nextStateId = this.transition(currentState.transitionStates, currentState.transitionPropabilites);
+        var nextStateId = transition(currentState.transitionStates, currentState.transitionPropabilites);
 
-        this.printText = nextStateId;
+        this.moveToNextId(nextStateId);
+    };
+
+    this.moveToNextId = function(nextStateId){
+        this.currentText = nextStateId;
 
         var newPrefix = (this.currentStateId + " " + nextStateId).split(" ").slice(1).join(" ");
 
         this.currentStateId = newPrefix;
-    };
+    }
 
-    this.transition = function(states, propabilites) {
+    function transition(states, propabilites) {
         var sumArray = [];
         var sum = 0;
 
