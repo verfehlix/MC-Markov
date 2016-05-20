@@ -1,68 +1,142 @@
+var _ = require('lodash');
+var rappable = require('rappable');
+
 var service = {};
 
-var State = function(id, transitionStates, transitionPropabilites) {
-    this.id = id;
-    this.transitionStates = transitionStates;
-    this.transitionPropabilites = transitionPropabilites;
-};
-
-var MarkovChain = function(states, initialStateId) {
-    this.states = states;
+var MarkovChain = function(model, initialStateId) {
 
     this.currentStateId = initialStateId;
+    this.currentText = _.last(initialStateId.split(" "));
 
-    this.currentText = initialStateId;
+    var RhymeFinder = function(rapWord, startStateId, minTextLength, maxTextLength, lang){
+        var id_stack = [];
+        id_stack.push(rapWord);
 
-    this.getCurrentStateById =  function(id) {
-        for (var i = 0; i < this.states.length; i++) {
-            if(this.states[i].id === this.currentStateId){
-                return this.states[i];
+        function checkIfStateRhymes(id){
+            for (var nachfolger in model[id]) {
+                if(rappable.isRappable(nachfolger, rapWord, lang)){
+                    return nachfolger;
+                }
             }
-        };
-    };
+        }
+
+        this.goLevelDown = function(currentid, nachfolger){
+            // var newStateid = generateNewId(currentid, nachfolger);
+            var newStateid = nachfolger;            
+            if (model[newStateid]) {
+                id_stack.push(newStateid);
+                var val = this.gimmeSomeMore();
+                id_stack.pop();
+                if (val) return val;
+            }
+        }
+
+        this.gimmeSomeMore = function(){
+            var currentid = _.last(id_stack);
+            var currentVariant = getTextForStack(id_stack);
+            for (var nachfolger in model[currentid]) {
+                
+                // console.log(currentVariant);
+                // console.log(currentVariant.length + "<"+ minTextLength);
+                if (currentVariant.length < minTextLength) {
+                    // too shallow go deeper
+                    var val = this.goLevelDown(currentid, nachfolger);
+                    if (val) return val;
+                }else{
+                    var val = checkIfStateRhymes(currentid);
+                    if (val) return currentVariant + " " + val;
+                    else{
+                        if (currentVariant.length < maxTextLength) {
+                            var val = this.goLevelDown(currentid, nachfolger);
+                            if (val) return val;
+                        }
+                    }
+
+                }
+            }
+        }
+
+        function getTextForStack(id_stack){
+            if (id_stack.length <= 1) return "";
+            var text = "";
+            if (id_stack[1].split(" ")[1])
+                text += id_stack[1].split(" ")[0] + " ";
+            for (var i = 1; i < id_stack.length; i++) {
+                if (id_stack[i].split(" ")[1]) {
+                    text += id_stack[i].split(" ")[1]+ " ";
+                }else{
+                    text += id_stack[i].split(" ")[0]+ " ";
+                }
+                
+            }
+            text.trim();
+            return text;
+        }
+    }
+
+    this.findPathToRhyme = function(minTextLength, lang){
+        var startPoint = this.currentText;
+        var startStateid = this.currentStateId;
+
+        var finder = new RhymeFinder(startPoint, startStateid, minTextLength, minTextLength+20, lang);
+        var rhyme =  finder.gimmeSomeMore();
+        console.log("rhyme: " + this.currentText + " "+ rhyme);
+        return rhyme;
+    }
 
     this.goToNextState =  function() {
-        var currentState = this.getCurrentStateById(this.currentStateId);
+        var currentState = model[this.currentStateId];
         
         if(!currentState){
-            var nextStateId = this.states[Math.floor(Math.random() * Object.keys(this.states).length - 1) ].id.split(" ")[0];
-
-            // console.log("Nothing found for '" + this.currentStateId + "' - Taking Random:" + nextStateId);
-            this.moveToNextId(nextStateId);
+            var nextTextPart = _.sample(Object.keys(model)).split(" ")[0];
+            // console.log("Nothing found for '" + this.currentStateId + "' - Taking Random:" + nextTextPart);
+            this.moveToNextId(nextTextPart);
             return;
         }
 
-        var nextStateId = transition(currentState.transitionStates, currentState.transitionPropabilites);
+        var nextTextPart = getRandomNachfolger(currentState);
 
-        this.moveToNextId(nextStateId);
+        this.moveToNextId(nextTextPart);
     };
 
-    this.moveToNextId = function(nextStateId){
-        this.currentText = nextStateId;
+    function generateNewId(currentStateId, nextTextPart, order){
+        if (!order) order = 2;
+        if (order == 2) {
+            return _.last(currentStateId.split(" "))+ " "+ nextTextPart; //  jetzt gehts + los  --> gehts los 
+        }else if(order == 1){
+            return nextTextPart;
+        }else{
+            throw "not implemented";
+        }
+    }
 
-        var newPrefix = (this.currentStateId + " " + nextStateId).split(" ").slice(1).join(" ");
+    this.moveToNextId = function(nextTextPart){
+        this.currentText = nextTextPart;
 
+        var newPrefix = generateNewId(this.currentStateId, nextTextPart);
         this.currentStateId = newPrefix;
     }
 
-    function transition(states, propabilites) {
-        var sumArray = [];
-        var sum = 0;
+    function getRandomNachfolger(state) {
+            var sumArray = [];
+            var sum = 0;
 
-        for (var i = 0; i < propabilites.length - 1; i++) {
-            sum += propabilites[i];
-            sumArray[i] = sum;
-        }
+            var i = 0;
+            for (var prop in state) {
+                sum += state[prop];
+                sumArray[i] = sum;
+                i++;
+            }
 
-        var r = Math.random();
+            var r = Math.random();
 
-        for (var i = 0; i < sumArray.length && r >= sumArray[i]; i++);
-        
-        return states[i];
+            for (i = 0; i < sumArray.length && r >= sumArray[i]; i++);
+            
+            return Object.keys(state)[i];
+        };
     };
-};
 
-service.State = State;
+
 service.MarkovChain = MarkovChain;
 
 module.exports = service;
