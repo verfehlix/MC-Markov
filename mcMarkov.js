@@ -22,14 +22,12 @@ var MarkovChain = function(model, initialStateId) {
 
         this.goLevelDown = function(currentid, nachfolger){
             var newStateid;
-            // var newStateid = generateNewId(currentid, nachfolger);
             if (Object.keys(model[nachfolger]).length >= 1000000) {
                 newStateid = nachfolger;
                 console.log(nachfolger);
             }else{
                 newStateid = generateNewId(currentid, nachfolger);
             }
-            // var newStateid = nachfolger;
             if (model[newStateid]) {
                 id_stack.push(newStateid);
                 var val = this.gimmeSomeMore();

@@ -6,7 +6,6 @@ var service = {};
 
 var allWords = {};
 var model = {};
-// var modelOrder1 = {};
 
 function addToModels(text, order){
 	addToModel(text, 1, model);
@@ -45,7 +44,8 @@ function addToModel(text, order, model){
 			word += textArray[j] + " ";
 		}
 		word = word.trim();
-
+		if (!word) continue;
+		
 		var nachfolger = textArray[i+order];
 
 		if(!model[word]){ 
@@ -144,7 +144,7 @@ function getMarkovText(amountOfWords, options){
 				if (rhyme) {
 					resultText += rhyme;
 					resultText += " \n";
-					this.currentStateId = rhyme.split(" ").slice(-2).join(" ");
+					markovChain.currentStateId = rhyme.split(" ").slice(-2).join(" ");
 					charsSinceLastRhyme = 0;
 				}else{
 					shouldMarkWordForRhyme = false;
@@ -162,7 +162,7 @@ function getMarkovText(amountOfWords, options){
 			if (charsSinceLastRhyme>options.rhymeEveryXCharacters*2  && !shouldMarkWordForRhyme) {
 				var rhyme = findSimilarEnding(lastToRhyme, options.lang);
 				resultText += rhyme + " \n";
-				this.currentStateId = rhyme;
+				markovChain.currentStateId = rhyme;
 				charsSinceLastRhyme = 0;
 				shouldMarkWordForRhyme = true;
 			}
@@ -189,7 +189,6 @@ function getMarkovText(amountOfWords, options){
 }
 
 service.addToModels = addToModels;
-service.addToModel = addToModel;
 service.calcProbabilities = calcProbabilities;
 service.getMarkovText = getMarkovText;
 service.findSimilarEnding = findSimilarEnding;
