@@ -21,8 +21,15 @@ var MarkovChain = function(model, initialStateId) {
         }
 
         this.goLevelDown = function(currentid, nachfolger){
+            var newStateid;
             // var newStateid = generateNewId(currentid, nachfolger);
-            var newStateid = nachfolger;            
+            if (Object.keys(model[nachfolger]).length >= 1000000) {
+                newStateid = nachfolger;
+                console.log(nachfolger);
+            }else{
+                newStateid = generateNewId(currentid, nachfolger);
+            }
+            // var newStateid = nachfolger;
             if (model[newStateid]) {
                 id_stack.push(newStateid);
                 var val = this.gimmeSomeMore();
@@ -45,27 +52,32 @@ var MarkovChain = function(model, initialStateId) {
                 }else{
                     var val = checkIfStateRhymes(currentid);
                     if (val) return currentVariant + " " + val;
-                    else{
-                        if (currentVariant.length < maxTextLength) {
-                            var val = this.goLevelDown(currentid, nachfolger);
-                            if (val) return val;
-                        }
+                    else if (currentVariant.length < maxTextLength){
+                        var val = this.goLevelDown(currentid, nachfolger);
+                        if (val) return val;
                     }
 
                 }
             }
         }
 
+        function first(text){
+            return text.split(" ")[0] 
+        }
+        function second(text){
+            return text.split(" ")[1] 
+        }
+
         function getTextForStack(id_stack){
             if (id_stack.length <= 1) return "";
             var text = "";
-            if (id_stack[1].split(" ")[1])
-                text += id_stack[1].split(" ")[0] + " ";
+            if (second(id_stack[0]) && second(id_stack[1])) // order 2
+                text += first(id_stack[1]) + " ";
             for (var i = 1; i < id_stack.length; i++) {
-                if (id_stack[i].split(" ")[1]) {
-                    text += id_stack[i].split(" ")[1]+ " ";
+                if (second(id_stack[i])) {
+                    text += second(id_stack[i]) + " ";
                 }else{
-                    text += id_stack[i].split(" ")[0]+ " ";
+                    text += first(id_stack[i]) + " ";
                 }
                 
             }
@@ -78,9 +90,9 @@ var MarkovChain = function(model, initialStateId) {
         var startPoint = this.currentText;
         var startStateid = this.currentStateId;
 
-        var finder = new RhymeFinder(startPoint, startStateid, minTextLength, minTextLength+20, lang);
+        var finder = new RhymeFinder(startPoint, startStateid, minTextLength, minTextLength+10, lang);
         var rhyme =  finder.gimmeSomeMore();
-        console.log("rhyme: " + this.currentText + " "+ rhyme);
+        console.log("rhyme: " + rhyme);
         return rhyme;
     }
 
