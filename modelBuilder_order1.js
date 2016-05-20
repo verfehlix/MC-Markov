@@ -45,7 +45,7 @@ function addToModel(text, order, model){
 		}
 		word = word.trim();
 		if (!word) continue;
-		
+
 		var nachfolger = textArray[i+order];
 
 		if(!model[word]){ 
@@ -180,7 +180,13 @@ function getMarkovText(amountOfWords, options){
 		// 	}
 		// }
 		
-		markovChain.goToNextState();
+		if (options.rhymeEveryXCharacters && shouldMarkWordForRhyme && charsSinceLastRhyme + 10 > options.rhymeEveryXCharacters ) {
+			markovChain.goToNextRapWord(options.rhymeEveryXCharacters - charsSinceLastRhyme);
+		}else{
+			markovChain.goToNextState();
+		}
+
+		
 		
 	};
 

@@ -10,7 +10,7 @@ var MarkovChain = function(model, initialStateId) {
 
     var RhymeFinder = function(rapWord, startStateId, minTextLength, maxTextLength, lang){
         var id_stack = [];
-        id_stack.push(rapWord);
+        id_stack.push(startStateId); // start with single word for more variance
 
         function checkIfStateRhymes(id){
             for (var nachfolger in model[id]) {
@@ -22,7 +22,7 @@ var MarkovChain = function(model, initialStateId) {
 
         this.goLevelDown = function(currentid, nachfolger){
             var newStateid;
-            if (Object.keys(model[nachfolger]).length >= 1000000) {
+            if (model[nachfolger] && Object.keys(model[nachfolger]).length >= 200000) { // here is an error anywhere
                 newStateid = nachfolger;
                 console.log(nachfolger);
             }else{
@@ -109,6 +109,27 @@ var MarkovChain = function(model, initialStateId) {
         this.moveToNextId(nextTextPart);
     };
 
+    this.goToNextRapWord =  function(minSize) {
+        var currentState = model[this.currentStateId];
+        if(!currentState){
+            var nextTextPart = _.sample(Object.keys(model)).split(" ")[0];
+            this.moveToNextId(nextTextPart);
+            return;
+        }
+        var longest = Object.keys(currentState).reduce(function (a, b) { return a.length > b.length ? a : b; });
+        var shortest = Object.keys(currentState).reduce(function (a, b) { return a.length < b.length ? a : b; });
+        if (longest.length < minSize) {
+            console.log("noo too short: " + longest + " take:" + shortest);
+            this.moveToNextId(shortest);
+        }else{
+            console.log("oh yeah: " + longest);
+            this.moveToNextId(longest);
+        }
+        
+    };
+
+
+
     function generateNewId(currentStateId, nextTextPart, order){
         if (!order) order = 2;
         if (order == 2) {
@@ -132,8 +153,8 @@ var MarkovChain = function(model, initialStateId) {
             var sum = 0;
 
             var i = 0;
-            for (var prop in state) {
-                sum += state[prop];
+            for (var nachfolger in state) {
+                sum += state[nachfolger];
                 sumArray[i] = sum;
                 i++;
             }
